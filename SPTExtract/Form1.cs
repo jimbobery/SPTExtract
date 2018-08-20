@@ -22,12 +22,48 @@ namespace SPTExtract
 
         private void btnGetInvoices_Click(object sender, EventArgs e)
         {
+            panelResults.Controls.Clear();
+            Label lblInvNum = new Label();
+            lblInvNum.Text = "Invoice Num";
+            lblInvNum.Location = new Point(20, 10);
+            lblInvNum.Size = new Size(67, 13);
+            panelResults.Controls.Add(lblInvNum);
+            Label lblLineNum = new Label();
+            lblLineNum.Text = "Line Num";
+            lblLineNum.Location = new Point(105, 10);
+            lblLineNum.Size = new Size(60, 13);
+            panelResults.Controls.Add(lblLineNum);
+            Label lbJobNum = new Label();
+            lbJobNum.Text = "Job Num";
+            lbJobNum.Location = new Point(195, 10);
+            panelResults.Controls.Add(lbJobNum);
+            Label lblQuantity = new Label();
+            lblQuantity.Text = "Quantity";
+            lblQuantity.Location = new Point(300, 10);
+            panelResults.Controls.Add(lblQuantity);
+            Label lblUnitPrice = new Label();
+            lblUnitPrice.Text = "Unit Price";
+            lblUnitPrice.Location = new Point(405, 10);
+            panelResults.Controls.Add(lblUnitPrice);
+            Label lblSupplierNum = new Label();
+            lblSupplierNum.Text = "Supplier Num";
+            lblSupplierNum.Location = new Point(510, 10);
+            panelResults.Controls.Add(lblSupplierNum);
+            Label lblBuyerNum = new Label();
+            lblBuyerNum.Text = "Buyer Num";
+            lblBuyerNum.Location = new Point(615, 10);
+            panelResults.Controls.Add(lblBuyerNum);
+            Label lblDueDate = new Label();
+            lblDueDate.Text = "Due Date";
+            lblDueDate.Location = new Point(720, 10);
+            panelResults.Controls.Add(lblDueDate);
+
             // get invoices
             DateTime fromDate = dteFrom.Value;
             DateTime toDate = dteTo.Value;
             List<Guid> contact = new List<Guid>();
             contact.Add(new Guid(comboBoxCustomer.SelectedValue.ToString()));
-            String where = @"Type==""ACCREC"" && Status==""SUBMITTED"" && Date >= DateTime("+ fromDate.Year.ToString() + ", " + fromDate.Month.ToString() + ", " + fromDate.Day.ToString() + ") && Date <= DateTime(" + toDate.Year.ToString() + ", " + toDate.Month.ToString() + ", " + toDate.Day.ToString() + ")";
+            String where = @"Type==""ACCREC"" && Status==""DRAFT"" && Date >= DateTime("+ fromDate.Year.ToString() + ", " + fromDate.Month.ToString() + ", " + fromDate.Day.ToString() + ") && Date <= DateTime(" + toDate.Year.ToString() + ", " + toDate.Month.ToString() + ", " + toDate.Day.ToString() + ")";
             List<Invoice> invoices = new List<Invoice>();
             List<Invoice> invoicesPaged = new List<Invoice>();
             int page = 1;
@@ -55,14 +91,39 @@ namespace SPTExtract
                     // y position
                     int yvar = 10 + (21 * (loopCount + 1));
 
+                    TextBox textBoxId = new TextBox();
+                    textBoxId.Name = "txtId" + loopCount.ToString();
+                    textBoxId.Text = invoice.Id.ToString();
+                    textBoxId.Enabled = false;
+                    textBoxId.Visible = false;
+                    textBoxId.Location = new Point(0, yvar);
+                    panelResults.Controls.Add(textBoxId);
+
+                    CheckBox checkLine = new CheckBox();
+                    checkLine.Name = "chkLine" + loopCount.ToString();
+                    checkLine.Text = "";
+                    checkLine.Width = 15;
+                    checkLine.Checked = true;
+                    checkLine.Location = new Point(0, yvar);
+                    panelResults.Controls.Add(checkLine);
+
                     TextBox textBoxInvNum = new TextBox();
                     textBoxInvNum.Name = "txtInvNum" + loopCount.ToString();
-                    textBoxInvNum.Text = invoice.Number + " - Line " + lineCount.ToString();
+                    textBoxInvNum.Text = invoice.Number;
                     textBoxInvNum.Enabled = false;
                     textBoxInvNum.BackColor = Color.White;
-                    textBoxInvNum.Width = 100;
+                    textBoxInvNum.Width = 80;
                     textBoxInvNum.Location = new Point(20, yvar);
                     panelResults.Controls.Add(textBoxInvNum);
+
+                    TextBox textBoxLineNum = new TextBox();
+                    textBoxLineNum.Name = "txtLineNum" + loopCount.ToString();
+                    textBoxLineNum.Text = lineCount.ToString();
+                    textBoxLineNum.Enabled = false;
+                    textBoxLineNum.BackColor = Color.White;
+                    textBoxLineNum.Width = 50;
+                    textBoxLineNum.Location = new Point(105, yvar);
+                    panelResults.Controls.Add(textBoxLineNum);
 
                     TextBox textBoxJobNum = new TextBox();
                     textBoxJobNum.Name = "txtJobNum" + loopCount.ToString();
@@ -125,14 +186,23 @@ namespace SPTExtract
                 return;
             }
 
-            String path = SPTExtract.Properties.Settings.Default.folder + @"\SPTExtract_" + DateTime.Now.ToString("dd-MM-yyyy") + ".csv";
+            TextBox textBoxInvNumberFirst = (TextBox)panelResults.Controls.Find("txtInvNum0", false)[0];
+            String currentInv = textBoxInvNumberFirst.Text;
+            TextBox textBoxIdFirst = (TextBox)panelResults.Controls.Find("txtId0", false)[0];
+            Guid currentId = new Guid(textBoxIdFirst.Text);
+            String path = SPTExtract.Properties.Settings.Default.folder + @"\SPTExtract_" + currentInv + "_" + DateTime.Now.ToString("dd-MM-yyyy HH-mm-ss") + ".csv";
             StreamWriter file = new StreamWriter(path);
-            
             file.WriteLine("jobnum,Qty,UnitPriceGBP,supplier,buyer,DueDate");
+            int rowsInThisFile = 0;
 
             for (int i = 0; i < Convert.ToInt32(txtRowCount.Text); i++)
-            {                    
+            {
                 String csvLine = "";
+                TextBox textBoxIdTemp = (TextBox)panelResults.Controls.Find("txtId" + i.ToString(), false)[0];
+                Guid id = new Guid(textBoxIdTemp.Text);
+                CheckBox checkLineTemp = (CheckBox)panelResults.Controls.Find("chkLine" + i.ToString(), false)[0];
+                TextBox textBoxNumberTemp = (TextBox)panelResults.Controls.Find("txtInvNum" + i.ToString(), false)[0];
+                String invNum = textBoxNumberTemp.Text;
                 TextBox textBoxJobNumberTemp = (TextBox)panelResults.Controls.Find("txtJobNum" + i.ToString(), false)[0];
                 String jobNum = textBoxJobNumberTemp.Text;
                 TextBox textQuantityTemp = (TextBox)panelResults.Controls.Find("txtQuantity" + i.ToString(), false)[0];
@@ -144,13 +214,53 @@ namespace SPTExtract
                 TextBox textBoxBuyerNumTemp = (TextBox)panelResults.Controls.Find("txtBuyerNum" + i.ToString(), false)[0];
                 String buyerNum = textBoxBuyerNumTemp.Text;
                 TextBox textBoxDueDateTemp = (TextBox)panelResults.Controls.Find("txtDueDate" + i.ToString(), false)[0];
-                String dueDate = textBoxDueDateTemp.Text;
-
+                String dueDate = Convert.ToDateTime(textBoxDueDateTemp.Text).ToString("dd/MM/yyyy");
                 csvLine = jobNum + "," + quantity + "," + unitPrice + "," + supplierNum + "," + buyerNum + "," + dueDate;
-                file.WriteLine(csvLine);
+
+                if (currentInv != invNum)
+                {
+                    file.Close();
+                    // did we just create a file with no rows? delete it
+                    if(rowsInThisFile==0)
+                    {
+                        System.IO.File.Delete(path);
+                    }
+                    // did we just create a file with at least one row? Then mark the invoice as approved
+                    if (rowsInThisFile >0 )
+                    {
+                        Invoice invoice = _XeroAPI.Invoices.Find(currentId);
+                        invoice.Status = Xero.Api.Core.Model.Status.InvoiceStatus.Submitted;
+                        _XeroAPI.Invoices.Update(invoice);
+                    }
+
+                    path = SPTExtract.Properties.Settings.Default.folder + @"\SPTExtract_" + invNum + "_" + DateTime.Now.ToString("dd-MM-yyyy HH-mm-ss") + ".csv";
+                    file = new StreamWriter(path);
+                    file.WriteLine("jobnum,Qty,UnitPriceGBP,supplier,buyer,DueDate");
+                    rowsInThisFile = 0;
+                }
+
+                if (checkLineTemp.Checked)
+                {
+                    file.WriteLine(csvLine);
+                    rowsInThisFile++;
+                }
+                currentInv = invNum;
+                currentId = id;
             }
             file.Close();
-            MessageBox.Show("Extract complete. File extracted to:" + Environment.NewLine + path, "SPTExtract", MessageBoxButtons.OK);
+            // did we just create a file with no rows? delete it
+            if (rowsInThisFile == 0)
+            {
+                System.IO.File.Delete(path);
+            }
+            // did we just create a file with at least one row? Then mark the invoice as approved
+            if (rowsInThisFile > 0)
+            {
+                Invoice invoice = _XeroAPI.Invoices.Find(currentId);
+                invoice.Status = Xero.Api.Core.Model.Status.InvoiceStatus.Submitted;
+                _XeroAPI.Invoices.Update(invoice);
+            }
+            MessageBox.Show("Extract complete and selected invoices have been changed from Draft to Awaiting Approval in Xero. File extracted to:" + Environment.NewLine + SPTExtract.Properties.Settings.Default.folder, "SPTExtract", MessageBoxButtons.OK);
         }
 
         private String GetJobNumberFromDescription(String description)
@@ -181,7 +291,7 @@ namespace SPTExtract
         {
             String orgName = _XeroAPI.Organisation.Name;
 
-            String message = "SPTExtract is a simple tool to get invoices from Xero and extract them to a csv file so that this can then be shared with a customer."
+            String message = "SPTExtract (v1.03) is a simple tool to get invoices from Xero and extract them to a csv file so that this can then be shared with a customer."
             + Environment.NewLine
             + Environment.NewLine
             + "SPTExtract is currently connected to the Xero organisation named:"
@@ -226,12 +336,22 @@ namespace SPTExtract
             // load customers
             String where = @"IsCustomer=true";
             List<Contact> contacts = new List<Contact>();
-            contacts = (List<Contact>)_XeroAPI.Contacts.Where(where).Find();
+            List<Contact> contactsPaged = new List<Contact>();
+            int page = 1;
+            do
+            {
+                contactsPaged = (List<Contact>)_XeroAPI.Contacts.Page(page).Where(where).Find();
+                contacts.AddRange(contactsPaged);
+                page++;
+            } while (contactsPaged.Count() > 0);
+            List<Contact> contactsSorted = contacts.OrderBy(o => o.Name).ToList();
             comboBoxCustomer.DisplayMember = "Name"; // Column Name
             comboBoxCustomer.ValueMember = "Id";  // Column Name
-            comboBoxCustomer.DataSource = contacts;
-            comboBoxCustomer.SelectedValue = new Guid(SPTExtract.Properties.Settings.Default.contactId);
-
+            comboBoxCustomer.DataSource = contactsSorted;
+            if (!String.IsNullOrEmpty(SPTExtract.Properties.Settings.Default.contactId))
+            { 
+                comboBoxCustomer.SelectedValue = new Guid(SPTExtract.Properties.Settings.Default.contactId);
+            }
         }
 
         private void frmSPTExract_FormClosed(object sender, FormClosedEventArgs e)
