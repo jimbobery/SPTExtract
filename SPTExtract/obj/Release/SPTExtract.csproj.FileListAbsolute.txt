@@ -1,0 +1,17 @@
+C:\Git\SPTExtract\SPTExtract\bin\Release\SPTExtract.exe.config
+C:\Git\SPTExtract\SPTExtract\bin\Release\SPTExtract.exe
+C:\Git\SPTExtract\SPTExtract\bin\Release\SPTExtract.pdb
+C:\Git\SPTExtract\SPTExtract\bin\Release\Xero.Api.dll
+C:\Git\SPTExtract\SPTExtract\bin\Release\Xero.Api.Example.Applications.dll
+C:\Git\SPTExtract\SPTExtract\bin\Release\Newtonsoft.Json.dll
+C:\Git\SPTExtract\SPTExtract\bin\Release\Xero.Api.Example.Applications.pdb
+C:\Git\SPTExtract\SPTExtract\bin\Release\Xero.Api.pdb
+C:\Git\SPTExtract\SPTExtract\bin\Release\Newtonsoft.Json.xml
+C:\Git\SPTExtract\SPTExtract\obj\Release\SPTExtract.csprojAssemblyReference.cache
+C:\Git\SPTExtract\SPTExtract\obj\Release\SPTExtract.frmSPTExract.resources
+C:\Git\SPTExtract\SPTExtract\obj\Release\SPTExtract.Properties.Resources.resources
+C:\Git\SPTExtract\SPTExtract\obj\Release\SPTExtract.csproj.GenerateResource.cache
+C:\Git\SPTExtract\SPTExtract\obj\Release\SPTExtract.csproj.CoreCompileInputs.cache
+C:\Git\SPTExtract\SPTExtract\obj\Release\SPTExtract.csproj.CopyComplete
+C:\Git\SPTExtract\SPTExtract\obj\Release\SPTExtract.exe
+C:\Git\SPTExtract\SPTExtract\obj\Release\SPTExtract.pdb
