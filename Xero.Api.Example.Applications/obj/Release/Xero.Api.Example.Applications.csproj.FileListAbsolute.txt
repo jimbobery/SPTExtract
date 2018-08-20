@@ -1,0 +1,11 @@
+C:\Git\SPTExtract\Xero.Api.Example.Applications\bin\Release\Xero.Api.Example.Applications.dll
+C:\Git\SPTExtract\Xero.Api.Example.Applications\bin\Release\Xero.Api.Example.Applications.pdb
+C:\Git\SPTExtract\Xero.Api.Example.Applications\bin\Release\Xero.Api.dll
+C:\Git\SPTExtract\Xero.Api.Example.Applications\bin\Release\Newtonsoft.Json.dll
+C:\Git\SPTExtract\Xero.Api.Example.Applications\bin\Release\Xero.Api.pdb
+C:\Git\SPTExtract\Xero.Api.Example.Applications\bin\Release\Newtonsoft.Json.xml
+C:\Git\SPTExtract\Xero.Api.Example.Applications\obj\Release\Xero.Api.Example.Applications.csprojAssemblyReference.cache
+C:\Git\SPTExtract\Xero.Api.Example.Applications\obj\Release\Xero.Api.Example.Applications.csproj.CoreCompileInputs.cache
+C:\Git\SPTExtract\Xero.Api.Example.Applications\obj\Release\Xero.Api.Example.Applications.csproj.CopyComplete
+C:\Git\SPTExtract\Xero.Api.Example.Applications\obj\Release\Xero.Api.Example.Applications.dll
+C:\Git\SPTExtract\Xero.Api.Example.Applications\obj\Release\Xero.Api.Example.Applications.pdb
