@@ -1,26 +1,156 @@
 ﻿using System;
-using System.Configuration;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 using System.IO;
-using Xero.Api.Core.Model;
-using System.Security.Cryptography.X509Certificates;
+using System.Security.Cryptography;
+using static SPTExtract.Constants.XeroUrls;
+using Xero.NetStandard.OAuth2.Client;
+using Xero.NetStandard.OAuth2.Token;
+using Xero.NetStandard.OAuth2.Config;
+using Xero.NetStandard.OAuth2.Model.Accounting;
+using Xero.NetStandard.OAuth2.Api;
 
 namespace SPTExtract
 {
     public partial class frmSPTExract : Form
     {
-        Xero.Api.Example.Applications.Private.Core _XeroAPI;
-        private static readonly Xero.Api.Example.Applications.Private.Settings _ApplicationSettings = new Xero.Api.Example.Applications.Private.Settings();
-
         public frmSPTExract()
         {
             InitializeComponent();
+            RedirectUri = "http://localhost:8888/callback";
+            XeroConfiguration xeroConfigTemp = new XeroConfiguration();
+            xeroConfigTemp.AppName = "SPTExtract";
+            xeroConfigTemp.ClientId = "56A805C0E65E443ABEC86717DE2A9087";
+            xeroConfigTemp.Scope = Uri.EscapeUriString("offline_access openid profile email accounting.transactions accounting.settings accounting.contacts");
+            xeroConfigTemp.State = "12345678";
+            XeroConfig = xeroConfigTemp;
         }
 
-        private void btnGetInvoices_Click(object sender, EventArgs e)
+        private XeroConfiguration _xeroConfig;
+
+        public XeroConfiguration XeroConfig
+        {
+            get => _xeroConfig;
+
+            set
+            {
+                _xeroConfig = value;
+            }
+        }
+
+        private string _redirectUri;
+        public string RedirectUri
+        {
+            get => _redirectUri;
+
+            set
+            {
+                _redirectUri = value;
+            }
+        }
+
+        private string _state;
+        public string State
+        {
+            get => _state;
+
+            set
+            {
+                _state = value;
+            }
+        }
+
+        private string _codeVerifier;
+        public string CodeVerifier
+        {
+            get => _codeVerifier;
+
+            set
+            {
+                _codeVerifier = value;
+            }
+        }
+
+        private string _authorisationCode;
+        public string AuthorisationCode
+        {
+            get => _authorisationCode;
+
+            set
+            {
+                _authorisationCode = value;
+            }
+        }
+
+        private string _tenantId;
+        public string TenantId
+        {
+            get => _tenantId;
+
+            set
+            {
+                _tenantId = value;
+            }
+        }
+
+        private string _tenantName;
+        public string TenantName
+        {
+            get => _tenantName;
+
+            set
+            {
+                lblConnectedOrgName.Visible = true;
+                lblConnectedOrgName.Text = "Connected to: " + value;
+                pnlXeroConnection.BackColor = Color.SpringGreen;
+                _tenantName = value;
+            }
+        }
+        private static string GenerateCodeVerifier()
+        {
+            //Generate a random string for our code verifier
+            var rng = RandomNumberGenerator.Create();
+            var bytes = new byte[32];
+            rng.GetBytes(bytes);
+
+            var codeVerifier = Convert.ToBase64String(bytes)
+                .TrimEnd('=')
+                .Replace('+', '-')
+                .Replace('/', '_');
+            return codeVerifier;
+        }
+
+        private async void BtnConnect_Click(object sender, EventArgs e)
+        {
+            CodeVerifier = GenerateCodeVerifier();
+
+            //construct the link that the end user will need to visit in order to authorize the app
+
+            //generate the code challenge based on the verifier
+            string codeChallenge;
+            using (var sha256 = System.Security.Cryptography.SHA256.Create())
+            {
+                var challengeBytes = sha256.ComputeHash(System.Text.Encoding.UTF8.GetBytes(CodeVerifier));
+                codeChallenge = Convert.ToBase64String(challengeBytes)
+                    .TrimEnd('=')
+                    .Replace('+', '-')
+                    .Replace('/', '_');
+            }
+
+            var authLink = $"{AuthorisationUrl}?response_type=code&client_id={XeroConfig.ClientId}&redirect_uri={RedirectUri}&scope={XeroConfig.Scope}&state={XeroConfig.State}&code_challenge={codeChallenge}&code_challenge_method=S256";
+
+            //open web browser with the link generated
+            System.Diagnostics.Process.Start(authLink);
+
+            //start webserver to listen for the callback
+            await LocalHttpListener.StartWebServer(this);
+
+            LoadCustomers();
+        }
+
+        private async void btnGetInvoices_Click(object sender, EventArgs e)
         {
             panelResults.Controls.Clear();
             Label lblInvNum = new Label();
@@ -58,23 +188,38 @@ namespace SPTExtract
             lblDueDate.Location = new Point(720, 10);
             panelResults.Controls.Add(lblDueDate);
 
+            // check token
+            var xeroToken = TokenUtilities.GetStoredToken();
+            var utcTimeNow = DateTime.UtcNow;
+
+            if (utcTimeNow > xeroToken.ExpiresAtUtc)
+            {
+                var client = new XeroClient(XeroConfig);
+                xeroToken = (XeroOAuth2Token)await client.RefreshAccessTokenAsync(xeroToken);
+                TokenUtilities.StoreToken(xeroToken);
+            }
+
+            var AccountingApi = new AccountingApi();
+
             // get invoices
             DateTime fromDate = dteFrom.Value;
             DateTime toDate = dteTo.Value;
             List<Guid> contact = new List<Guid>();
             contact.Add(new Guid(comboBoxCustomer.SelectedValue.ToString()));
-            String where = @"Type==""ACCREC"" && Status==""DRAFT"" && Date >= DateTime("+ fromDate.Year.ToString() + ", " + fromDate.Month.ToString() + ", " + fromDate.Day.ToString() + ") && Date <= DateTime(" + toDate.Year.ToString() + ", " + toDate.Month.ToString() + ", " + toDate.Day.ToString() + ")";
+            String where = @"Type==""ACCREC"" && Status==""DRAFT"" && Date >= DateTime(" + fromDate.Year.ToString() + ", " + fromDate.Month.ToString() + ", " + fromDate.Day.ToString() + ") && Date <= DateTime(" + toDate.Year.ToString() + ", " + toDate.Month.ToString() + ", " + toDate.Day.ToString() + ")";
+
             List<Invoice> invoices = new List<Invoice>();
             List<Invoice> invoicesPaged = new List<Invoice>();
             int page = 1;
             do
             {
-                invoicesPaged = (List<Xero.Api.Core.Model.Invoice>)_XeroAPI.Invoices.Page(page).Where(where).ContactIds(contact).Find();
+                var response = await AccountingApi.GetInvoicesAsync(xeroToken.AccessToken, TokenUtilities.GetCurrentTenantId().ToString(), null, where, null, null, null, contact, null, page);
+                invoicesPaged = response._Invoices;
                 invoices.AddRange(invoicesPaged);
                 page++;
             } while (invoicesPaged.Count() > 0);
 
-            if(invoices.Count==0)
+            if (invoices.Count == 0)
             {
                 MessageBox.Show("No invoices found", "SPTExtract", MessageBoxButtons.OK);
                 return;
@@ -93,7 +238,7 @@ namespace SPTExtract
 
                     TextBox textBoxId = new TextBox();
                     textBoxId.Name = "txtId" + loopCount.ToString();
-                    textBoxId.Text = invoice.Id.ToString();
+                    textBoxId.Text = invoice.InvoiceID.ToString();
                     textBoxId.Enabled = false;
                     textBoxId.Visible = false;
                     textBoxId.Location = new Point(0, yvar);
@@ -109,7 +254,7 @@ namespace SPTExtract
 
                     TextBox textBoxInvNum = new TextBox();
                     textBoxInvNum.Name = "txtInvNum" + loopCount.ToString();
-                    textBoxInvNum.Text = invoice.Number;
+                    textBoxInvNum.Text = invoice.InvoiceNumber;
                     textBoxInvNum.Enabled = false;
                     textBoxInvNum.BackColor = Color.White;
                     textBoxInvNum.Width = 80;
@@ -176,11 +321,13 @@ namespace SPTExtract
                 }
             }
             txtRowCount.Text = loopCount.ToString();
+
         }
 
-        private void btnExtract_Click(object sender, EventArgs e)
+        private async void btnExtract_Click(object sender, EventArgs e)
         {
-            if(String.IsNullOrEmpty(SPTExtract.Properties.Settings.Default.folder))
+
+            if (String.IsNullOrEmpty(SPTExtract.Properties.Settings.Default.folder))
             {
                 MessageBox.Show("You must select a folder to save the CSV file to, click the Folder button", "SPTExtract", MessageBoxButtons.OK);
                 return;
@@ -192,8 +339,21 @@ namespace SPTExtract
             Guid currentId = new Guid(textBoxIdFirst.Text);
             String path = SPTExtract.Properties.Settings.Default.folder + @"\SPTExtract_" + currentInv + "_" + DateTime.Now.ToString("dd-MM-yyyy HH-mm-ss") + ".csv";
             StreamWriter file = new StreamWriter(path);
-            file.WriteLine("jobnum,Qty,UnitPriceGBP,supplier,buyer,DueDate");
+            file.WriteLine("Jobnum,Qty,UnitPriceGBP,Supplier,Buyer,DueDate");
             int rowsInThisFile = 0;
+
+            // get a token
+            var xeroToken = TokenUtilities.GetStoredToken();
+            var utcTimeNow = DateTime.UtcNow;
+
+            if (utcTimeNow > xeroToken.ExpiresAtUtc)
+            {
+                var client = new XeroClient(XeroConfig);
+                xeroToken = (XeroOAuth2Token)await client.RefreshAccessTokenAsync(xeroToken);
+                TokenUtilities.StoreToken(xeroToken);
+            }
+
+            var AccountingApi = new AccountingApi();
 
             for (int i = 0; i < Convert.ToInt32(txtRowCount.Text); i++)
             {
@@ -221,16 +381,22 @@ namespace SPTExtract
                 {
                     file.Close();
                     // did we just create a file with no rows? delete it
-                    if(rowsInThisFile==0)
+                    if (rowsInThisFile == 0)
                     {
                         System.IO.File.Delete(path);
                     }
                     // did we just create a file with at least one row? Then mark the invoice as approved
-                    if (rowsInThisFile >0 )
+                    if (rowsInThisFile > 0)
                     {
-                        Invoice invoice = _XeroAPI.Invoices.Find(currentId);
-                        invoice.Status = Xero.Api.Core.Model.Status.InvoiceStatus.Submitted;
-                        _XeroAPI.Invoices.Update(invoice);
+                        var response = await AccountingApi.GetInvoiceAsync(xeroToken.AccessToken, TokenUtilities.GetCurrentTenantId().ToString(), currentId);
+                        Invoice invoice = response._Invoices[0];
+                        invoice.Status = Invoice.StatusEnum.SUBMITTED;
+                        List<Invoice> invoiceList = new List<Invoice>();
+                        invoiceList.Add(invoice);
+                        Invoices invoices = new Invoices();
+                        invoices._Invoices = invoiceList;
+
+                        response = await AccountingApi.UpdateInvoiceAsync(xeroToken.AccessToken, TokenUtilities.GetCurrentTenantId().ToString(), currentId, invoices);
                     }
 
                     path = SPTExtract.Properties.Settings.Default.folder + @"\SPTExtract_" + invNum + "_" + DateTime.Now.ToString("dd-MM-yyyy HH-mm-ss") + ".csv";
@@ -256,11 +422,19 @@ namespace SPTExtract
             // did we just create a file with at least one row? Then mark the invoice as approved
             if (rowsInThisFile > 0)
             {
-                Invoice invoice = _XeroAPI.Invoices.Find(currentId);
-                invoice.Status = Xero.Api.Core.Model.Status.InvoiceStatus.Submitted;
-                _XeroAPI.Invoices.Update(invoice);
+                var response = await AccountingApi.GetInvoiceAsync(xeroToken.AccessToken, TokenUtilities.GetCurrentTenantId().ToString(), currentId);
+                Invoice invoice = response._Invoices[0];
+                invoice.Status = Invoice.StatusEnum.SUBMITTED;
+                List<Invoice> invoiceList = new List<Invoice>();
+                invoiceList.Add(invoice);
+                Invoices invoices = new Invoices();
+                invoices._Invoices = invoiceList;
+
+                response = await AccountingApi.UpdateInvoiceAsync(xeroToken.AccessToken, TokenUtilities.GetCurrentTenantId().ToString(), currentId, invoices);
+
             }
             MessageBox.Show("Extract complete and selected invoices have been changed from Draft to Awaiting Approval in Xero. File extracted to:" + Environment.NewLine + SPTExtract.Properties.Settings.Default.folder, "SPTExtract", MessageBoxButtons.OK);
+
         }
 
         private String GetJobNumberFromDescription(String description)
@@ -276,6 +450,9 @@ namespace SPTExtract
                         jobNum = description.Substring(dashPos, description.Length - dashPos);
                         jobNum = jobNum.Replace('-', ' ');
                         jobNum = jobNum.Trim(' ');
+                        // Remove all newlines from the 'example' string variable
+                        jobNum = jobNum.Replace("\n", "");
+                        jobNum = jobNum.Replace("\r", "");
                     }
                 }
             }
@@ -289,14 +466,7 @@ namespace SPTExtract
 
         private void toolStripMenuItemAbout_Click(object sender, EventArgs e)
         {
-            String orgName = _XeroAPI.Organisation.Name;
-
-            String message = "SPTExtract (v1.03) is a simple tool to get invoices from Xero and extract them to a csv file so that this can then be shared with a customer."
-            + Environment.NewLine
-            + Environment.NewLine
-            + "SPTExtract is currently connected to the Xero organisation named:"
-            + Environment.NewLine
-            + orgName
+            String message = "SPTExtract (v2.00) is a simple tool to get invoices from Xero and extract them to a csv file so that this can then be shared with a customer."
             + Environment.NewLine
             + Environment.NewLine
             + "If you have any issues using SPTExtract contact John Leach."
@@ -305,15 +475,32 @@ namespace SPTExtract
             MessageBox.Show(message, "SPTExtract", MessageBoxButtons.OK);
         }
 
-        private void toolStripMenuItemXero_Click(object sender, EventArgs e)
+        private async void toolStripMenuItemXero_Click(object sender, EventArgs e)
         {
-            String shortCode = _XeroAPI.Organisation.ShortCode;
+            // get org name
+            var xeroToken = TokenUtilities.GetStoredToken();
+            var utcTimeNow = DateTime.UtcNow;
 
-            String targetURL = @"https://go.xero.com/organisationlogin/default.aspx?shortcode="+ shortCode + "&redirecturl=/Accounts/Receivable/Dashboard/";
+            if (utcTimeNow > xeroToken.ExpiresAtUtc)
+            {
+                var client = new XeroClient(XeroConfig);
+                xeroToken = (XeroOAuth2Token)await client.RefreshAccessTokenAsync(xeroToken);
+                TokenUtilities.StoreToken(xeroToken);
+            }
+
+            var AccountingApi = new AccountingApi();
+
+            // load org name
+            var response = await AccountingApi.GetOrganisationsAsync(xeroToken.AccessToken, TokenUtilities.GetCurrentTenantId().ToString());
+            var org = response._Organisations;
+
+            String shortCode = org[0].ShortCode;
+
+            String targetURL = @"https://go.xero.com/organisationlogin/default.aspx?shortcode=" + shortCode + "&redirecturl=/Accounts/Receivable/Dashboard/";
             System.Diagnostics.Process.Start(targetURL);
         }
 
-        private void frmSPTExract_Load(object sender, EventArgs e)
+        private async void frmSPTExract_Load(object sender, EventArgs e)
         {
             txtRowCount.Visible = false;
             this.BackgroundImage = Properties.Resources.spt_background;
@@ -325,31 +512,56 @@ namespace SPTExtract
             txtBuyerNumber.Text = SPTExtract.Properties.Settings.Default.buyerNumber;
             lblFolder.Text = SPTExtract.Properties.Settings.Default.folder;
 
-            // inistalise the Xero API
-            X509Certificate2 certificate = new X509Certificate2();
-            certificate.Import(Properties.Resources.sptextract_privatekey, _ApplicationSettings.SigningCertificatePassword, X509KeyStorageFlags.MachineKeySet);
-            _XeroAPI = new Xero.Api.Example.Applications.Private.Core(certificate, false)
+            if (TokenUtilities.TokenExists())
             {
-                UserAgent = "SPTExtract",
-            };
+                LoadCustomers();
+                // get org name
+                var xeroToken = TokenUtilities.GetStoredToken();
+                var utcTimeNow = DateTime.UtcNow;
+
+                if (utcTimeNow > xeroToken.ExpiresAtUtc)
+                {
+                    var client = new XeroClient(XeroConfig);
+                    xeroToken = (XeroOAuth2Token)await client.RefreshAccessTokenAsync(xeroToken);
+                    TokenUtilities.StoreToken(xeroToken);
+                }
+
+                var AccountingApi = new AccountingApi();
+
+                // load org name
+                var response = await AccountingApi.GetOrganisationsAsync(xeroToken.AccessToken, TokenUtilities.GetCurrentTenantId().ToString());
+                var org = response._Organisations;
+                TenantName = org[0].Name;
+            }
+        }
+
+        public async void LoadCustomers()
+        {
+            // check token
+            var xeroToken = TokenUtilities.GetStoredToken();
+            var utcTimeNow = DateTime.UtcNow;
+
+            if (utcTimeNow > xeroToken.ExpiresAtUtc)
+            {
+                var client = new XeroClient(XeroConfig);
+                xeroToken = (XeroOAuth2Token)await client.RefreshAccessTokenAsync(xeroToken);
+                TokenUtilities.StoreToken(xeroToken);
+            }
+
+            var AccountingApi = new AccountingApi();
 
             // load customers
             String where = @"IsCustomer=true";
-            List<Contact> contacts = new List<Contact>();
-            List<Contact> contactsPaged = new List<Contact>();
-            int page = 1;
-            do
-            {
-                contactsPaged = (List<Contact>)_XeroAPI.Contacts.Page(page).Where(where).Find();
-                contacts.AddRange(contactsPaged);
-                page++;
-            } while (contactsPaged.Count() > 0);
-            List<Contact> contactsSorted = contacts.OrderBy(o => o.Name).ToList();
+            var response = await AccountingApi.GetContactsAsync(xeroToken.AccessToken, TokenUtilities.GetCurrentTenantId().ToString(), null, where);
+            var contacts = response._Contacts;
+            var contactsPaged = new List<Xero.NetStandard.OAuth2.Model.Accounting.Contact>();
+
             comboBoxCustomer.DisplayMember = "Name"; // Column Name
-            comboBoxCustomer.ValueMember = "Id";  // Column Name
-            comboBoxCustomer.DataSource = contactsSorted;
+            comboBoxCustomer.ValueMember = "ContactId";  // Column Name
+            comboBoxCustomer.DataSource = contacts.OrderBy(o => o.Name).ToList();
+
             if (!String.IsNullOrEmpty(SPTExtract.Properties.Settings.Default.contactId))
-            { 
+            {
                 comboBoxCustomer.SelectedValue = new Guid(SPTExtract.Properties.Settings.Default.contactId);
             }
         }
@@ -358,7 +570,10 @@ namespace SPTExtract
         {
             SPTExtract.Properties.Settings.Default.supplierNumber = txtSupplierNumber.Text;
             SPTExtract.Properties.Settings.Default.buyerNumber = txtBuyerNumber.Text;
-            SPTExtract.Properties.Settings.Default.contactId = comboBoxCustomer.SelectedValue.ToString();
+            if (comboBoxCustomer.SelectedItem != null)
+            {
+                SPTExtract.Properties.Settings.Default.contactId = comboBoxCustomer.SelectedValue.ToString();
+            }
             SPTExtract.Properties.Settings.Default.Save();
         }
 

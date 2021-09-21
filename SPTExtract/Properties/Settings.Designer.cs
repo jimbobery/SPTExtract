@@ -70,5 +70,9 @@ namespace SPTExtract.Properties {
                 this["contactId"] = value;
             }
         }
+
+        public string AccessToken { get; internal set; }
+        public string RefreshToken { get; internal set; }
+        public string IDToken { get; internal set; }
     }
 }

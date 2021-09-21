@@ -96,11 +96,21 @@
             this.printPreviewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.panel1 = new System.Windows.Forms.Panel();
+            this.lblConnectedOrgName = new System.Windows.Forms.Label();
+            this.pnlXeroConnection = new System.Windows.Forms.Panel();
+            this.btnConnect = new System.Windows.Forms.Button();
+            this.label23 = new System.Windows.Forms.Label();
+            this.dateTimePicker1 = new System.Windows.Forms.DateTimePicker();
+            this.textBox2 = new System.Windows.Forms.TextBox();
+            this.label27 = new System.Windows.Forms.Label();
+            this.panel7 = new System.Windows.Forms.Panel();
             this.panelResults.SuspendLayout();
             this.panel2.SuspendLayout();
             this.panel3.SuspendLayout();
             this.panel5.SuspendLayout();
             this.menuStrip1.SuspendLayout();
+            this.panel1.SuspendLayout();
             this.SuspendLayout();
             // 
             // btnGetInvoices
@@ -159,7 +169,7 @@
             this.panelResults.Controls.Add(this.label10);
             this.panelResults.Controls.Add(this.label9);
             this.panelResults.Controls.Add(this.label8);
-            this.panelResults.Location = new System.Drawing.Point(50, 195);
+            this.panelResults.Location = new System.Drawing.Point(50, 227);
             this.panelResults.Name = "panelResults";
             this.panelResults.Size = new System.Drawing.Size(880, 426);
             this.panelResults.TabIndex = 5;
@@ -248,7 +258,7 @@
             this.panel2.Controls.Add(this.btnGetInvoices);
             this.panel2.Controls.Add(this.label1);
             this.panel2.Controls.Add(this.label2);
-            this.panel2.Location = new System.Drawing.Point(337, 37);
+            this.panel2.Location = new System.Drawing.Point(337, 69);
             this.panel2.Name = "panel2";
             this.panel2.Size = new System.Drawing.Size(313, 143);
             this.panel2.TabIndex = 7;
@@ -302,7 +312,7 @@
             this.panel3.Controls.Add(this.label4);
             this.panel3.Controls.Add(this.panel4);
             this.panel3.Controls.Add(this.label18);
-            this.panel3.Location = new System.Drawing.Point(17, 37);
+            this.panel3.Location = new System.Drawing.Point(17, 69);
             this.panel3.Name = "panel3";
             this.panel3.Size = new System.Drawing.Size(313, 143);
             this.panel3.TabIndex = 8;
@@ -408,7 +418,7 @@
             this.panel5.Controls.Add(this.label16);
             this.panel5.Controls.Add(this.btnExtract);
             this.panel5.Controls.Add(this.panel6);
-            this.panel5.Location = new System.Drawing.Point(656, 37);
+            this.panel5.Location = new System.Drawing.Point(656, 69);
             this.panel5.Name = "panel5";
             this.panel5.Size = new System.Drawing.Size(313, 143);
             this.panel5.TabIndex = 9;
@@ -668,12 +678,95 @@
             this.exitToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.exitToolStripMenuItem.Text = "E&xit";
             // 
+            // panel1
+            // 
+            this.panel1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panel1.Controls.Add(this.lblConnectedOrgName);
+            this.panel1.Controls.Add(this.pnlXeroConnection);
+            this.panel1.Controls.Add(this.btnConnect);
+            this.panel1.Controls.Add(this.label23);
+            this.panel1.Controls.Add(this.dateTimePicker1);
+            this.panel1.Controls.Add(this.textBox2);
+            this.panel1.Controls.Add(this.label27);
+            this.panel1.Controls.Add(this.panel7);
+            this.panel1.Location = new System.Drawing.Point(17, 27);
+            this.panel1.Name = "panel1";
+            this.panel1.Size = new System.Drawing.Size(952, 36);
+            this.panel1.TabIndex = 15;
+            // 
+            // lblConnectedOrgName
+            // 
+            this.lblConnectedOrgName.Location = new System.Drawing.Point(264, 10);
+            this.lblConnectedOrgName.Name = "lblConnectedOrgName";
+            this.lblConnectedOrgName.Size = new System.Drawing.Size(367, 23);
+            this.lblConnectedOrgName.TabIndex = 19;
+            this.lblConnectedOrgName.Text = "Connected Org";
+            // 
+            // pnlXeroConnection
+            // 
+            this.pnlXeroConnection.BackColor = System.Drawing.Color.Crimson;
+            this.pnlXeroConnection.Location = new System.Drawing.Point(144, 9);
+            this.pnlXeroConnection.Name = "pnlXeroConnection";
+            this.pnlXeroConnection.Size = new System.Drawing.Size(20, 17);
+            this.pnlXeroConnection.TabIndex = 18;
+            // 
+            // btnConnect
+            // 
+            this.btnConnect.Location = new System.Drawing.Point(170, 5);
+            this.btnConnect.Name = "btnConnect";
+            this.btnConnect.Size = new System.Drawing.Size(88, 23);
+            this.btnConnect.TabIndex = 17;
+            this.btnConnect.Text = "Connect";
+            this.btnConnect.UseVisualStyleBackColor = true;
+            this.btnConnect.Click += new System.EventHandler(this.BtnConnect_Click);
+            // 
+            // label23
+            // 
+            this.label23.Location = new System.Drawing.Point(18, 10);
+            this.label23.Name = "label23";
+            this.label23.Size = new System.Drawing.Size(145, 23);
+            this.label23.TabIndex = 0;
+            this.label23.Text = "Xero Connection Status";
+            // 
+            // dateTimePicker1
+            // 
+            this.dateTimePicker1.Format = System.Windows.Forms.DateTimePickerFormat.Short;
+            this.dateTimePicker1.Location = new System.Drawing.Point(127, 111);
+            this.dateTimePicker1.Name = "dateTimePicker1";
+            this.dateTimePicker1.Size = new System.Drawing.Size(0, 20);
+            this.dateTimePicker1.TabIndex = 10;
+            // 
+            // textBox2
+            // 
+            this.textBox2.DataBindings.Add(new System.Windows.Forms.Binding("Text", global::SPTExtract.Properties.Settings.Default, "buyerNumber", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
+            this.textBox2.Location = new System.Drawing.Point(127, 87);
+            this.textBox2.Name = "textBox2";
+            this.textBox2.Size = new System.Drawing.Size(0, 20);
+            this.textBox2.TabIndex = 13;
+            this.textBox2.Text = global::SPTExtract.Properties.Settings.Default.buyerNumber;
+            // 
+            // label27
+            // 
+            this.label27.AutoSize = true;
+            this.label27.Location = new System.Drawing.Point(12, 10);
+            this.label27.Name = "label27";
+            this.label27.Size = new System.Drawing.Size(0, 13);
+            this.label27.TabIndex = 2;
+            // 
+            // panel7
+            // 
+            this.panel7.Location = new System.Drawing.Point(192, 0);
+            this.panel7.Name = "panel7";
+            this.panel7.Size = new System.Drawing.Size(0, 0);
+            this.panel7.TabIndex = 8;
+            // 
             // frmSPTExract
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
-            this.ClientSize = new System.Drawing.Size(984, 636);
+            this.ClientSize = new System.Drawing.Size(984, 736);
+            this.Controls.Add(this.panel1);
             this.Controls.Add(this.panel5);
             this.Controls.Add(this.panel3);
             this.Controls.Add(this.panelResults);
@@ -695,6 +788,8 @@
             this.panel5.PerformLayout();
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
+            this.panel1.ResumeLayout(false);
+            this.panel1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -769,6 +864,15 @@
         private System.Windows.Forms.ComboBox comboBoxCustomer;
         private System.Windows.Forms.Label label21;
         private System.Windows.Forms.Label label22;
+        private System.Windows.Forms.Panel panel1;
+        private System.Windows.Forms.Label label23;
+        private System.Windows.Forms.DateTimePicker dateTimePicker1;
+        private System.Windows.Forms.TextBox textBox2;
+        private System.Windows.Forms.Label label27;
+        private System.Windows.Forms.Panel panel7;
+        private System.Windows.Forms.Label lblConnectedOrgName;
+        private System.Windows.Forms.Panel pnlXeroConnection;
+        private System.Windows.Forms.Button btnConnect;
     }
 }
 

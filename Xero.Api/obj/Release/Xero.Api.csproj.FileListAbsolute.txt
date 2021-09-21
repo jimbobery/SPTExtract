@@ -1,9 +1,0 @@
-C:\Git\SPTExtract\Xero.Api\bin\Release\Xero.Api.dll
-C:\Git\SPTExtract\Xero.Api\bin\Release\Xero.Api.pdb
-C:\Git\SPTExtract\Xero.Api\bin\Release\Newtonsoft.Json.dll
-C:\Git\SPTExtract\Xero.Api\bin\Release\Newtonsoft.Json.xml
-C:\Git\SPTExtract\Xero.Api\obj\Release\Xero.Api.csprojAssemblyReference.cache
-C:\Git\SPTExtract\Xero.Api\obj\Release\Xero.Api.csproj.CoreCompileInputs.cache
-C:\Git\SPTExtract\Xero.Api\obj\Release\Xero.Api.csproj.CopyComplete
-C:\Git\SPTExtract\Xero.Api\obj\Release\Xero.Api.dll
-C:\Git\SPTExtract\Xero.Api\obj\Release\Xero.Api.pdb
