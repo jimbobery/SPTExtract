@@ -537,32 +537,44 @@ namespace SPTExtract
 
         public async void LoadCustomers()
         {
-            // check token
-            var xeroToken = TokenUtilities.GetStoredToken();
-            var utcTimeNow = DateTime.UtcNow;
-
-            if (utcTimeNow > xeroToken.ExpiresAtUtc)
+            if (TokenUtilities.TokenExists())
             {
-                var client = new XeroClient(XeroConfig);
-                xeroToken = (XeroOAuth2Token)await client.RefreshAccessTokenAsync(xeroToken);
-                TokenUtilities.StoreToken(xeroToken);
-            }
+                // check token
+                var xeroToken = TokenUtilities.GetStoredToken();
+                var utcTimeNow = DateTime.UtcNow;
 
-            var AccountingApi = new AccountingApi();
+                if (utcTimeNow > xeroToken.ExpiresAtUtc)
+                {
+                    var client = new XeroClient(XeroConfig);
+                    xeroToken = (XeroOAuth2Token)await client.RefreshAccessTokenAsync(xeroToken);
+                    TokenUtilities.StoreToken(xeroToken);
+                }
 
-            // load customers
-            String where = @"IsCustomer=true";
-            var response = await AccountingApi.GetContactsAsync(xeroToken.AccessToken, TokenUtilities.GetCurrentTenantId().ToString(), null, where);
-            var contacts = response._Contacts;
-            var contactsPaged = new List<Xero.NetStandard.OAuth2.Model.Accounting.Contact>();
+                var AccountingApi = new AccountingApi();
 
-            comboBoxCustomer.DisplayMember = "Name"; // Column Name
-            comboBoxCustomer.ValueMember = "ContactId";  // Column Name
-            comboBoxCustomer.DataSource = contacts.OrderBy(o => o.Name).ToList();
+                // load customers
+                String where = @"IsCustomer=true";
+                try
+                {
+                    var response = await AccountingApi.GetContactsAsync(xeroToken.AccessToken, TokenUtilities.GetCurrentTenantId().ToString(), null, where);
+                    var contacts = response._Contacts;
+                    var contactsPaged = new List<Xero.NetStandard.OAuth2.Model.Accounting.Contact>();
 
-            if (!String.IsNullOrEmpty(SPTExtract.Properties.Settings.Default.contactId))
-            {
-                comboBoxCustomer.SelectedValue = new Guid(SPTExtract.Properties.Settings.Default.contactId);
+                    comboBoxCustomer.DisplayMember = "Name"; // Column Name
+                    comboBoxCustomer.ValueMember = "ContactId";  // Column Name
+                    comboBoxCustomer.DataSource = contacts.OrderBy(o => o.Name).ToList();
+
+                    if (!String.IsNullOrEmpty(SPTExtract.Properties.Settings.Default.contactId))
+                    {
+                        comboBoxCustomer.SelectedValue = new Guid(SPTExtract.Properties.Settings.Default.contactId);
+                    }
+                }
+                catch (Exception)
+                {
+                    // clear down the token so we can start again
+                    TokenUtilities.DestroyToken();
+                    throw;
+                }
             }
         }
 

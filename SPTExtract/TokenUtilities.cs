@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Text.Json;
+using System.Windows.Forms;
 using Xero.NetStandard.OAuth2.Token;
 
 public static class TokenUtilities
@@ -16,7 +17,7 @@ public static class TokenUtilities
   public static void StoreToken(XeroOAuth2Token xeroToken)
   {
     string serializedXeroToken = JsonSerializer.Serialize(xeroToken);
-    System.IO.File.WriteAllText("./xerotoken.json", serializedXeroToken);
+    System.IO.File.WriteAllText(Application.UserAppDataPath + "./xerotoken.json", serializedXeroToken);
   }
 
   public static XeroOAuth2Token GetStoredToken()
@@ -24,7 +25,7 @@ public static class TokenUtilities
     var xeroToken = new XeroOAuth2Token();
     
     try {
-      string serializedXeroToken = System.IO.File.ReadAllText("./xerotoken.json");
+      string serializedXeroToken = System.IO.File.ReadAllText(Application.UserAppDataPath + "./xerotoken.json");
       xeroToken = JsonSerializer.Deserialize<XeroOAuth2Token>(serializedXeroToken);
 
       return xeroToken;
@@ -37,7 +38,7 @@ public static class TokenUtilities
 
   public static bool TokenExists()
   {
-    string serializedXeroTokenPath = "./xerotoken.json";
+    string serializedXeroTokenPath = Application.UserAppDataPath + "./xerotoken.json";
     bool fileExist = File.Exists(serializedXeroTokenPath);
 
     return fileExist;
@@ -45,7 +46,7 @@ public static class TokenUtilities
 
   public static void DestroyToken()
   {
-    string serializedXeroTokenPath = "./xerotoken.json";
+    string serializedXeroTokenPath = Application.UserAppDataPath + "./xerotoken.json";
     File.Delete(serializedXeroTokenPath);
 
     return;
@@ -61,7 +62,7 @@ public static class TokenUtilities
     string serializedXeroToken = JsonSerializer.Serialize(
       new TenantId { CurrentTenantId = tenantId }
     );
-    System.IO.File.WriteAllText("./tenantid.json", serializedXeroToken);
+    System.IO.File.WriteAllText(Application.UserAppDataPath + "./tenantid.json", serializedXeroToken);
   }
 
   public static Guid GetCurrentTenantId()
@@ -69,7 +70,7 @@ public static class TokenUtilities
     Guid id;
     try
     {
-      string serializedIndexFile = System.IO.File.ReadAllText("./tenantid.json");
+      string serializedIndexFile = System.IO.File.ReadAllText(Application.UserAppDataPath + "./tenantid.json");
       id = JsonSerializer.Deserialize<TenantId>(serializedIndexFile).CurrentTenantId;
     }
     catch (IOException)
@@ -84,7 +85,7 @@ public static class TokenUtilities
   {
     State currentState = new State(state);
     string serializedState = JsonSerializer.Serialize(currentState);
-    System.IO.File.WriteAllText("./state.json", serializedState);
+    System.IO.File.WriteAllText(Application.UserAppDataPath + "./state.json", serializedState);
   }
 
   public static string GetCurrentState()
@@ -92,7 +93,7 @@ public static class TokenUtilities
     string state;
     try
     {
-      string serializedIndexFile = System.IO.File.ReadAllText("./state.json");
+      string serializedIndexFile = System.IO.File.ReadAllText(Application.UserAppDataPath + "./state.json");
       state = JsonSerializer.Deserialize<State>(serializedIndexFile).state;
     }
     catch (IOException)
