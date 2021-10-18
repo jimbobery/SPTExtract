@@ -339,7 +339,7 @@ namespace SPTExtract
             Guid currentId = new Guid(textBoxIdFirst.Text);
             String path = SPTExtract.Properties.Settings.Default.folder + @"\SPTExtract_" + currentInv + "_" + DateTime.Now.ToString("dd-MM-yyyy HH-mm-ss") + ".csv";
             StreamWriter file = new StreamWriter(path);
-            file.WriteLine("Jobnum,Qty,UnitPriceGBP,Supplier,Buyer,DueDate");
+            file.WriteLine("JobNum,Qty,UnitPriceGBP,Supplier,Buyer,DueDate");
             int rowsInThisFile = 0;
 
             // get a token
@@ -401,7 +401,7 @@ namespace SPTExtract
 
                     path = SPTExtract.Properties.Settings.Default.folder + @"\SPTExtract_" + invNum + "_" + DateTime.Now.ToString("dd-MM-yyyy HH-mm-ss") + ".csv";
                     file = new StreamWriter(path);
-                    file.WriteLine("jobnum,Qty,UnitPriceGBP,supplier,buyer,DueDate");
+                    file.WriteLine("jobNum,Qty,UnitPriceGBP,supplier,buyer,DueDate");
                     rowsInThisFile = 0;
                 }
 
@@ -466,7 +466,7 @@ namespace SPTExtract
 
         private void toolStripMenuItemAbout_Click(object sender, EventArgs e)
         {
-            String message = "SPTExtract (v2.00) is a simple tool to get invoices from Xero and extract them to a csv file so that this can then be shared with a customer."
+            String message = "SPTExtract (v2.01) is a simple tool to get invoices from Xero and extract them to a csv file so that this can then be shared with a customer."
             + Environment.NewLine
             + Environment.NewLine
             + "If you have any issues using SPTExtract contact John Leach."

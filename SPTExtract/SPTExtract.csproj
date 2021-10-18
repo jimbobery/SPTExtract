@@ -148,8 +148,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Icon1.ico" />
-    <None Include="Resources\sptextract-privatekey.pfx" />
-    <None Include="Resources\sptextract-publickey.cer" />
     <None Include="Resources\spt_logo_rgb_400x400_OzL_icon.ico" />
   </ItemGroup>
   <ItemGroup>

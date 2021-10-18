@@ -19,7 +19,7 @@ namespace SPTExtract.Properties {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resources {
@@ -77,26 +77,6 @@ namespace SPTExtract.Properties {
             get {
                 object obj = ResourceManager.GetObject("spt_logo_rgb_400x400_OzL_icon", resourceCulture);
                 return ((System.Drawing.Icon)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Byte[].
-        /// </summary>
-        internal static byte[] sptextract_privatekey {
-            get {
-                object obj = ResourceManager.GetObject("sptextract_privatekey", resourceCulture);
-                return ((byte[])(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Byte[].
-        /// </summary>
-        internal static byte[] sptextract_publickey {
-            get {
-                object obj = ResourceManager.GetObject("sptextract_publickey", resourceCulture);
-                return ((byte[])(obj));
             }
         }
     }

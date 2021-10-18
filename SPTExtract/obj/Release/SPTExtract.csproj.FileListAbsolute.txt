@@ -283,7 +283,6 @@ C:\Dev\git\SPTExtract\SPTExtract\bin\Release\System.Text.Json.xml
 C:\Dev\git\SPTExtract\SPTExtract\bin\Release\System.Threading.Tasks.Extensions.xml
 C:\Dev\git\SPTExtract\SPTExtract\bin\Release\System.ValueTuple.xml
 C:\Dev\git\SPTExtract\SPTExtract\bin\Release\Xero.NetStandard.OAuth2.xml
-C:\Dev\git\SPTExtract\SPTExtract\obj\Release\SPTExtract.csprojAssemblyReference.cache
 C:\Dev\git\SPTExtract\SPTExtract\obj\Release\SPTExtract.exe.config
 C:\Dev\git\SPTExtract\SPTExtract\obj\Release\SPTExtract.frmSPTExract.resources
 C:\Dev\git\SPTExtract\SPTExtract\obj\Release\SPTExtract.Properties.Resources.resources
